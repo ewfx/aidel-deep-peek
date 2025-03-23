@@ -31,7 +31,7 @@ class EntityRiskAgent:
         self.risk_assessment_agent = risk_agent
 
         self.manager_agent = CodeAgent(
-            model=HfApiModel("deepseek-ai/DeepSeek-R1", provider="together", max_tokens=8096),
+            model=HfApiModel("Qwen/Qwen2.5-Coder-32B-Instruct", provider="together", max_tokens=8096),
             tools=[],
             managed_agents=[self.web_search_agent, self.risk_assessment_agent],
             additional_authorized_imports=["json", "pandas", "numpy"],
