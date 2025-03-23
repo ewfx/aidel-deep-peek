@@ -55,12 +55,7 @@ Expected Output Format (JSON):
   "Risk Score": 0.65,
   "Confidence Score": 0.85,
   "Reason": "SovCo Capital Partners is owned by Russian businessmen and has direct links to Socombank PJSC, a sanctioned entity."
-    
-Instructions for Web Searching and Processing:
-Search for entity names across multiple free sources.
-Retrieve relevant attributes, ownership details, financial transactions, and regulatory status.
-Use logic-based evaluation to determine an appropriate risk score.
-Justify risk scores using extracted evidence and historical patterns.
+</json> 
 Ensure the results are accurate, well-structured, and provide actionable insights.
 Here is the input:
 {task}
