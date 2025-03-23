@@ -1,6 +1,7 @@
 from smolagents import Tool
 from .money_laundering_news_retriever import MoneyLaunderingNewsRetrieverTool
 from .lei_tool import LegalEntityIdentifierTool
+import json
 
 
 class RiskAssessmentTool(Tool):
@@ -39,59 +40,47 @@ class RiskAssessmentTool(Tool):
             "type": "string",
             "description": "Transaction ID (e.g. TXN-2023-5A9B)"
         },
-        "entity_list": {
+        "entity": {
             "type": "string",
-            "description": "List of names of entities (e.g., ['Goldman Sachs', 'Adani Group'])."
+            "description": "name of entity (e.g., ['Goldman Sachs', 'Adani Group', etc.])."
         },
-        "jurisdiction_list": {
+        "jurisdiction": {
             "type": "string",
-            "description": "The jurisdictions of the respective entities (e.g., ['United States', 'EU])."
+            "description": "The jurisdiction of the entities (e.g., ['United States', 'EU', etc])."
         },
-        "industry_list": {
+        "industry": {
             "type": "string",
-            "description": "The industry of the respective entities (e.g., ['banking', 'insurance'])."
+            "description": "The industry of the entity (e.g., ['banking', 'insurance', etc.])."
         }
     }
 
-    output_type = "dict"
+    output_type = "string"
 
-    def forward(self, transaction_id: str, entity_list: list[str], jurisdiction_list: list[str], industry_list: list[str]) -> dict[str, str | float | None | list[str]]:
+    def forward(self, transaction_id: str, entity: str, jurisdiction: str, industry: str) -> str:
         total_risk_score = 0.0
         total_confidence = 0.0
-        reasons = []
-        entity_count = len(entity_list)
+        ml_news_result = json.loads(MoneyLaunderingNewsRetrieverTool().forward(entity))
+        lei_result = json.loads(LegalEntityIdentifierTool().forward(entity, jurisdiction, industry))
 
-        for entity, jurisdiction, industry in zip(entity_list, jurisdiction_list, industry_list):
-            ml_news_result = MoneyLaunderingNewsRetrieverTool().forward(entity)
-            lei_result = LegalEntityIdentifierTool().forward(entity, jurisdiction, industry)
+        entity_risk_score = ml_news_result.get("risk_score", 0) + lei_result.get("risk_score", 0)
+        entity_confidence = ml_news_result.get("confidence", 0) + lei_result.get("confidence", 0)
 
-            entity_risk_score = ml_news_result.get("risk_score", 0) + lei_result.get("risk_score", 0)
-            entity_confidence = ml_news_result.get("confidence", 0) + lei_result.get("confidence", 0)
+        total_risk_score += entity_risk_score
+        total_confidence += entity_confidence
 
-            total_risk_score += entity_risk_score
-            total_confidence += entity_confidence
+        reason_ml_news = ml_news_result.get("supporting_evidence", [])
+        reason_lei = ""
+        if lei_result.get("lei") is None and lei_result.get("lei_required") is True:
+            reason_lei = lei_result.get("reason")
 
-            reason_ml_news = ml_news_result.get("supporting_evidence", [])
-            reason_lei = ""
-            if lei_result.get("lei") is None and lei_result.get("lei_required") is True:
-                reason_lei = lei_result.get("reason")
-
-            reasons.extend(reason_ml_news)
-            if reason_lei:
-                reasons.append(reason_lei)
-
-        if entity_count > 0:
-            avg_risk_score = total_risk_score / entity_count
-            final_risk_score = min(10.0, max(1.0, avg_risk_score))
-
-            final_confidence = min(1.0, max(0.0, total_confidence / (2 * entity_count)))
-        else:
-            final_risk_score = 1
-            final_confidence = 0
-        return {
+        avg_risk_score = total_risk_score / 2
+        final_risk_score = min(10.0, max(1.0, avg_risk_score))
+        final_confidence = min(1.0, max(0.0, total_confidence / 2))
+        res = {
             "transaction_id": transaction_id,
-            "entities": entity_list,
+            "entities": entity,
             "risk_score": final_risk_score,
             "confidence": final_confidence,
-            "reason": "; ".join(reasons) if reasons else "No significant risks found."
+            "reason": f"{reason_ml_news} {reason_lei}"
         }
+        return json.dumps(res, indent=2)
