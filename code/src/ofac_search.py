@@ -171,21 +171,24 @@ def main(search_term):
 
     sdn_file = get_latest_file(SDN_FOLDER, "sdn")
     alt_file = get_latest_file(ALT_FOLDER, "alt")
-    final_results = []
+    results = {
+        "SDN Results": [],
+        "ALT Results": []
+    }
 
     if sdn_file:
         sdn_df = load_csv(sdn_file, has_headers=False)
         sdn_data = extract_sdn_data(sdn_df)
         print("Searching in SDN List (Entity Name Only)...")
-        final_results.extend(fuzzy_search_data(sdn_data, search_term, "Entity Name"))
+        results["SDN Results"] = fuzzy_search_data(sdn_data, search_term, "Entity Name")
 
-    if not final_results and alt_file:
-        print("No strong matches found in SDN. Searching in Alias List...")
+    if alt_file:
+        print("Searching in Alias List...")
         alt_df = load_csv(alt_file, has_headers=False)
         alt_data = extract_alt_data(alt_df)
-        final_results.extend(fuzzy_search_data(alt_data, search_term, "Alias Name"))
+        results["ALT Results"] = fuzzy_search_data(alt_data, search_term, "Alias Name")
 
-    return json.dumps(final_results, indent=2)
+    return json.dumps(results, indent=2)
 
 # Main Function
 # def main():
