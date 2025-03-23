@@ -4,6 +4,7 @@ import os
 from datetime import datetime
 from rapidfuzz import process
 import re
+import json
 
 # API URLs
 SDN_URL = "https://sanctionslistservice.ofac.treas.gov/api/download/SDN.CSV"
@@ -119,6 +120,25 @@ def normalize_text(text: str) -> str:
 from rapidfuzz import process
 
 # Perform Fuzzy Search and Return Top 3 Results with Scores
+# def fuzzy_search_data(df, search_term, column_name, threshold=80):
+#     search_term = normalize_text(search_term)
+    
+#     # Get matches with scores
+#     matches = process.extract(search_term, df[column_name].dropna().apply(normalize_text), limit=3)
+    
+#     # Filter matches above threshold
+#     best_matches = [(df.iloc[match[2]], match[1]) for match in matches if match[1] >= threshold]
+    
+#     if best_matches:
+#         print(f"\n✅ Top {len(best_matches)} results for '{search_term}' in the {column_name} with their similarity scores:")
+#         if column_name == "Entity Name":
+#             for match, score in best_matches:
+#                 print(f"Entity: {match['Entity Name']} | Country: {match['Country']} | Score: {score}")
+#         else:
+#             for match, score in best_matches:
+#                 print(f"Alias: {match['Alias Name']} | Score: {score}")
+#     else:
+#         print(f"\n❌ No matches found for '{search_term}' in the {column_name}.")
 def fuzzy_search_data(df, search_term, column_name, threshold=80):
     search_term = normalize_text(search_term)
     
@@ -128,47 +148,74 @@ def fuzzy_search_data(df, search_term, column_name, threshold=80):
     # Filter matches above threshold
     best_matches = [(df.iloc[match[2]], match[1]) for match in matches if match[1] >= threshold]
     
+    # Prepare JSON output
+    result = []
     if best_matches:
-        print(f"\n✅ Top {len(best_matches)} results for '{search_term}' in the {column_name} with their similarity scores:")
-        if column_name == "Entity Name":
-            for match, score in best_matches:
-                print(f"Entity: {match['Entity Name']} | Country: {match['Country']} | Score: {score}")
-        else:
-            for match, score in best_matches:
-                print(f"Alias: {match['Alias Name']} | Score: {score}")
-    else:
-        print(f"\n❌ No matches found for '{search_term}' in the {column_name}.")
+        for match, score in best_matches:
+            if column_name == "Entity Name":
+                result.append({
+                    "entity": match['Entity Name'],
+                    "country": match['Country'],
+                    "score": score
+                })
+            else:
+                result.append({
+                    "entity": match['Alias Name'],
+                    "country": None,
+                    "score": score
+                })
+    return result
 
-
-# Main Function
-def main():
+def main(search_term):
     perform_task()
 
     sdn_file = get_latest_file(SDN_FOLDER, "sdn")
     alt_file = get_latest_file(ALT_FOLDER, "alt")
+    final_results = []
 
     if sdn_file:
         sdn_df = load_csv(sdn_file, has_headers=False)
         sdn_data = extract_sdn_data(sdn_df)
+        print("Searching in SDN List (Entity Name Only)...")
+        final_results.extend(fuzzy_search_data(sdn_data, search_term, "Entity Name"))
 
-    if alt_file:
+    if not final_results and alt_file:
+        print("No strong matches found in SDN. Searching in Alias List...")
         alt_df = load_csv(alt_file, has_headers=False)
         alt_data = extract_alt_data(alt_df)
+        final_results.extend(fuzzy_search_data(alt_data, search_term, "Alias Name"))
 
-    # Choose Search Option
-    search_term = input("Enter Entity Name: ").strip()
+    return json.dumps(final_results, indent=2)
 
-    if sdn_file:
-        print("Searching in SDN List (Entity Name Only)...")
-        fuzzy_search_data(sdn_data, search_term, "Entity Name")
-    else:
-        print("SDN data not available.")
+# Main Function
+# def main():
+#     perform_task()
 
-    if alt_file:
-        print("\nSearching in Alias List...")
-        fuzzy_search_data(alt_data, search_term, "Alias Name")
-    else:
-        print("ALT data not available.")
+#     sdn_file = get_latest_file(SDN_FOLDER, "sdn")
+#     alt_file = get_latest_file(ALT_FOLDER, "alt")
 
-if __name__ == "__main__":
-    main()
+#     if sdn_file:
+#         sdn_df = load_csv(sdn_file, has_headers=False)
+#         sdn_data = extract_sdn_data(sdn_df)
+
+#     if alt_file:
+#         alt_df = load_csv(alt_file, has_headers=False)
+#         alt_data = extract_alt_data(alt_df)
+
+#     # Choose Search Option
+#     search_term = input("Enter Entity Name: ").strip()
+
+#     if sdn_file:
+#         print("Searching in SDN List (Entity Name Only)...")
+#         fuzzy_search_data(sdn_data, search_term, "Entity Name")
+#     else:
+#         print("SDN data not available.")
+
+#     if alt_file:
+#         print("\nSearching in Alias List...")
+#         fuzzy_search_data(alt_data, search_term, "Alias Name")
+#     else:
+#         print("ALT data not available.")
+
+# if __name__ == "__main__":
+#     main()
