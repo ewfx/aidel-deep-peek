@@ -4,3 +4,10 @@ python-multipart==0.0.9
 pydantic==2.6.1
 rapidfuzz==3.6.1
 pandas==2.2.0
+smolagents
+python-dotenv
+nltk
+feedparser
+openpyxl
+sec_api
+thefuzz

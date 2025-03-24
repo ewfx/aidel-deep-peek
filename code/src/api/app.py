@@ -5,7 +5,7 @@ import uvicorn
 from main import RiskJSONGenerator
 
 app = FastAPI(
-    title="Risk Assessment API",
+    title="DeepPeek API",
     description="API for processing text files and generating risk assessments",
     version="1.0.0"
 )

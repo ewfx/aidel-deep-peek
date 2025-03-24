@@ -153,7 +153,8 @@ def forward(entity_name: str, matches: List[Tuple[Dict, float]]) -> Dict:
     return {
         "entity_name": entity_name,
         "entity_type": entity_data.get("enity_type", "Unknown"),
-        "confidence": similarity,
+        "confidence": (similarity * 1.0) / 100.0,
+        "risk_score": (similarity * 1.0) / 10.0,
         "evidence": f"sanctions: {entity_data.get('sanctions', 'None')}; dataset: {entity_data.get('dataset', 'None')}"
     }
 
