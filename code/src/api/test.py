@@ -1,5 +1,5 @@
 from tools.risk_assessment_tool import RiskAssessmentTool
-
+from datetime import datetime, timedelta
 tool = RiskAssessmentTool()
 print(tool.forward([{'transaction_id': 'txn0qahp',
   'entities_list': ['Global Horizons Consulting LLC',
@@ -19,3 +19,4 @@ print(tool.forward([{'transaction_id': 'txn0qahp',
    'Trading'],
   'sus_statements': ['Lack of linked invoice',
    'Use of NordVPN with a Panama exit node']}]))
+

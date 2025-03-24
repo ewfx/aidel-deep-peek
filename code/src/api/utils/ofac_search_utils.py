@@ -116,28 +116,6 @@ def normalize_text(text: str) -> str:
     # Strip leading/trailing spaces
     return text.strip()
 
-# Perform Fuzzy Search
-
-# Perform Fuzzy Search and Return Top 3 Results with Scores
-# def fuzzy_search_data(df, search_term, column_name, threshold=80):
-#     search_term = normalize_text(search_term)
-    
-#     # Get matches with scores
-#     matches = process.extract(search_term, df[column_name].dropna().apply(normalize_text), limit=3)
-    
-#     # Filter matches above threshold
-#     best_matches = [(df.iloc[match[2]], match[1]) for match in matches if match[1] >= threshold]
-    
-#     if best_matches:
-#         print(f"\n✅ Top {len(best_matches)} results for '{search_term}' in the {column_name} with their similarity scores:")
-#         if column_name == "Entity Name":
-#             for match, score in best_matches:
-#                 print(f"Entity: {match['Entity Name']} | Country: {match['Country']} | Score: {score}")
-#         else:
-#             for match, score in best_matches:
-#                 print(f"Alias: {match['Alias Name']} | Score: {score}")
-#     else:
-#         print(f"\n❌ No matches found for '{search_term}' in the {column_name}.")
 def fuzzy_search_data(df, search_term, column_name, threshold=90):
     search_term = normalize_text(search_term)
     
@@ -187,37 +165,4 @@ def main(search_term):
         alt_data = extract_alt_data(alt_df)
         results["ALT Results"] = fuzzy_search_data(alt_data, search_term, "Alias Name")
 
-    return json.dumps(results, indent=2)
-
-# Main Function
-# def main():
-#     perform_task()
-
-#     sdn_file = get_latest_file(SDN_FOLDER, "sdn")
-#     alt_file = get_latest_file(ALT_FOLDER, "alt")
-
-#     if sdn_file:
-#         sdn_df = load_csv(sdn_file, has_headers=False)
-#         sdn_data = extract_sdn_data(sdn_df)
-
-#     if alt_file:
-#         alt_df = load_csv(alt_file, has_headers=False)
-#         alt_data = extract_alt_data(alt_df)
-
-#     # Choose Search Option
-#     search_term = input("Enter Entity Name: ").strip()
-
-#     if sdn_file:
-#         print("Searching in SDN List (Entity Name Only)...")
-#         fuzzy_search_data(sdn_data, search_term, "Entity Name")
-#     else:
-#         print("SDN data not available.")
-
-#     if alt_file:
-#         print("\nSearching in Alias List...")
-#         fuzzy_search_data(alt_data, search_term, "Alias Name")
-#     else:
-#         print("ALT data not available.")
-
-# if __name__ == "__main__":
-#     main()
+    return json.dumps(results.get("SDN Results"), indent=2)

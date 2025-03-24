@@ -29,7 +29,7 @@ def normalize_text(text):
 
 def search_country(input_address, df):
     if df.empty:
-        return {"country": "", "category": "", "evidence": ""}
+        return {"country": "", "category": "", "evidence": "", "risk_score": 0}
     
     # Normalize input address and countries
     input_words = set(normalize_text(input_address).split())
@@ -42,11 +42,12 @@ def search_country(input_address, df):
             return {
                 "country": row['Countries'],
                 "category": row['Category'],
-                "evidence": "https://www.fatf-gafi.org/en/countries/black-and-grey-lists.html"
+                "evidence": "https://www.fatf-gafi.org/en/countries/black-and-grey-lists.html",
+                "risk_score": 1
             }
     
     # No match found
-    return {"country": "", "category": "", "evidence": ""}
+    return {"country": "", "category": "", "evidence": "", "risk_score": 0}
 
 # Main function
 def main(input_address):

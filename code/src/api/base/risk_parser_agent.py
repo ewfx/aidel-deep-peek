@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-SERPAPI_API_KEY = os.environ.get("SERPAPI_API_KEY")
+SERPAPI_API_KEY = os.environ.get("SERPER_API_KEY")
 HF_TOKEN = os.environ.get("HF_TOKEN")
 
 
