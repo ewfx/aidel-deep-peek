@@ -77,7 +77,7 @@ def get_highest_similarity(search_term: str, name: str, aliases: str) -> float:
     
     return max(name_similarity, alias_similarity)
 
-def fuzzy_search_sanctions(entity_name: str, csv_path: str, threshold: int = 85, max_matches: int = 3) -> List[Tuple[Dict, float]]:
+def search_opensanctions(entity_name: str, csv_path: str, threshold: int = 90, max_matches: int = 3) -> List[Tuple[Dict, float]]:
     """
     Perform fuzzy search on sanctions data to find matching entities.
     Searches both the name and aliases fields for matches.
@@ -131,30 +131,29 @@ def fuzzy_search_sanctions(entity_name: str, csv_path: str, threshold: int = 85,
         return matches
     
     except Exception as e:
-        logger.error(f"Error performing fuzzy search: {str(e)}")
+        logger.error(f"Error performing sanctions search: {str(e)}")
         raise
 
-def main():
-    # Example usage
-    csv_path = "opensanctions_default_data.simple.csv"
-    entity_name = "akshat"
+def forward(entity_name: str, matches: List[Tuple[Dict, float]]) -> Dict:
+    """
+    Format the search results into a standardized response dictionary.
     
-    try:
-        matches = fuzzy_search_sanctions(entity_name, csv_path)
+    Args:
+        entity_name (str): The original search query
+        matches (List[Tuple[Dict, float]]): List of matches from search_opensanctions
+        dataset_name (str): Name of the dataset being searched
         
-        if matches:
-            print(f"Found {len(matches)} matches:")
-            for entity_data, similarity in matches:
-                print(f"\nMatch Score: {similarity}%")
-                print("\nEntity Information:")
-                for key, value in entity_data.items():
-                    if value is not None:  # Only print non-null values
-                        print(f"  {key}: {value}")
-        else:
-            print("No matches found")
-            
-    except Exception as e:
-        print(f"Error: {str(e)}")
+    Returns:
+        Dict: Formatted response with entity_name, entity_type, confidence, and evidence
+    """
+    if not matches:
+        return None
+        
+    entity_data, similarity = matches[0]  # Get the top match
+    return {
+        "entity_name": entity_name,
+        "entity_type": entity_data.get("enity_type", "Unknown"),
+        "confidence": similarity,
+        "evidence": f"sanctions: {entity_data.get('sanctions', 'None')}; dataset: {entity_data.get('dataset', 'None')}"
+    }
 
-if __name__ == "__main__":
-    main() 
