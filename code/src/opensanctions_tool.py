@@ -1,12 +1,12 @@
 from searchUtil_opensanctions_datasets import search_opensanctions, forward
 
-def search_consolidated_sanctions_data(entity_name: str):
-    csv_path = "opensanctions_data/consolidated_sanctions.csv"
+def search_opensanctions_default_data(entity_name: str):
+    csv_path = "opensanctions_data/opensanctions_default_data.csv"
     matches = search_opensanctions(entity_name, csv_path, 90, 1)
     return forward(entity_name, matches)
 
-def search_opensanctions_defaut_data(entity_name: str):
-    csv_path = "opensanctions_data/opensanctions_default_data.csv"
+def search_consolidated_sanctions_data(entity_name: str):
+    csv_path = "opensanctions_data/consolidated_sanctions.csv"
     matches = search_opensanctions(entity_name, csv_path, 90, 1)
     return forward(entity_name, matches)
 
@@ -34,7 +34,7 @@ def search_peps_data(entity_name: str):
 def main():
     # Example usage
     try:
-        result = search_peps_data("Osama bin laden")
+        result = search_debarred_entities_data("masood azhar")
         
         if result:
             print("Match found:")
