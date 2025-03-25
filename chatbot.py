@@ -1,5 +1,6 @@
 import streamlit as st
 import time
+import pandas as pd
 import requests
 from io import BytesIO
 import json
@@ -75,17 +76,21 @@ uploaded_file = st.sidebar.file_uploader("Choose a file", type=["txt","csv"])
 if uploaded_file and st.sidebar.button("Upload"):
     with st.spinner("Uploading..."):
         upload_response = upload_file(uploaded_file)
-        upload_response = json.loads(upload_response['results'])
-        print("RESULTSSSSS"+str(upload_response.keys()))
-
+        
         if upload_response:
-            if(upload_response['pdf']!= None):
-                downloadable_file = upload_response['pdf']
-            st.sidebar.success(f"File uploaded successfully .")
-            st.write((upload_response['results']))
+            with st.chat_message("user"):
+                st.write(f"File uploaded successfully")
+            upload_response = json.loads(upload_response['results'])
+            print("RESULTSSSSS"+str(upload_response.keys()))
+            with st.chat_message("assistant"):
+                if(upload_response['pdf']!= None):
+                    downloadable_file = upload_response['pdf']
+                st.sidebar.success(f"File uploaded successfully .")
+                st.write((upload_response['results']))
+            st.session_state.history.append({"role": "assistant", "content": upload_response['results']})
 
 if(downloadable_file!=None):
-    st.sidebar.download_button('Download Report',downloadable_file,file_name='Risk Report',mime='application/pdf')
+    st.sidebar.download_button('Download Report',downloadable_file,file_name='Risk Report.txt')
 
 if prompt := st.chat_input("Say something"):
     with st.chat_message("user"):
