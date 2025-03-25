@@ -1,0 +1,28 @@
+{
+  "Transaction ID": "TXN-2023-7C2D",
+  "Date": "2023-08-15 14:25:00",
+  "Sender": {
+    "Name": "Global Horizons Consulting LLC",
+    "Account": "IBAN CH56 0483 5012 3456 7800 9 (Swiss Bank)",
+    "Beneficiary Owner": "Maria Gonzalez",
+    "Address" : "rue du marche 17, geneva, switzerland",
+    "notes" : "Consulting fees for project aurora"
+  },
+  "Receiver": {
+    "Name": "Bright Future non profit inc",
+    "Account": "9847654321 (Cayman National Bank, KY)",
+    "Adress": "PO Box 1234, George Town, Cayman Islands"
+    "Tax ID" : "KY-45678"
+  },
+  "Transaction Details": {
+    "Amount": "$49,850.00",
+    "Currency Exchange": "N/A",
+    "Transaction Type": "Wire Transfer",
+    "Reference": "Charitable Donation - Ref #DR-2023-0815",
+    "Notes": [
+      "Urgent Transfer approved by Mr Ali Al-Mansoori(Director).",
+      "Linked invoice missing. Processed via intermediary Quantum Holdings Ltd (BVI)",
+      "Sender IP: 192.168.89.123 (VPN detected: NordVPN, exit node in Panama)"
+    ]
+  }
+}

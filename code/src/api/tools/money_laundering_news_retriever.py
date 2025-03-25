@@ -35,7 +35,7 @@ class MoneyLaunderingNewsRetrieverTool(Tool):
             "description": "The name of the company (e.g., 'Adani Enterprises Limited')."
         }
     }
-    output_type = "dict"
+    output_type = "string"
 
     KEYWORDS = "money laundering OR fraud OR tax evasion OR corruption OR scandal"
 
@@ -43,7 +43,7 @@ class MoneyLaunderingNewsRetrieverTool(Tool):
         super().__init__(**kwargs)
         self.sentiment_analyzer = SentimentIntensityAnalyzer()
 
-    def forward(self, entity: str) -> dict[str, str | float | None | list[str]]:
+    def forward(self, entity: str) -> str:
         assert isinstance(entity, str), "Entity name must be a string."
         news_list = NewsUtils.get_google_news(entity, self.KEYWORDS)
         top_negative_news = NewsUtils.filter_top_negative_news(news_list, top_n=5)
@@ -68,7 +68,7 @@ class MoneyLaunderingNewsRetrieverTool(Tool):
             avg_confidence = 0
         output["risk_score"] = round(avg_risk / 10, 2)
         output["confidence"] = round(avg_confidence / 100, 2)
-        return output
+        return json.dumps(output, indent =2)
 
 
 if __name__ == "__main__":

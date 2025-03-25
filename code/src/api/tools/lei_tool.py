@@ -39,13 +39,13 @@ class LegalEntityIdentifierTool(Tool):
             "description": "The industry of the entity (e.g., 'banking')."
         }
     }
-    output_type = "dict"
+    output_type = "string"
 
-    def forward(self, entity: str, jurisdiction: str, industry: str) -> dict[str, str | float | None | list[str]]:
+    def forward(self, entity: str, jurisdiction: str, industry: str) -> str:
         assert isinstance(entity, str) and isinstance(jurisdiction, str) and isinstance(industry, str), "Inputs must " \
                                                                                                             "be strings. "
         entity_info = {"name": entity, "jurisdiction": jurisdiction, "industry": industry}
-        return LeiUtils.assign_risk_score(entity_info)
+        return json.dumps(LeiUtils.assign_risk_score(entity_info), indent=2)
 
 
 if __name__ == "__main__":
