@@ -11,3 +11,4 @@ feedparser
 openpyxl
 sec_api
 thefuzz
+google-generativeai
