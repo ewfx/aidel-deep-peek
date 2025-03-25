@@ -5,6 +5,7 @@ from .tools import ofac_api, pep_api, tax_havens_api
 from utils.fatf_search_utils import main as fatf_tool
 from utils.jurisdiction_search_utils import main as geo_risk_tool
 from utils.ofac_search_utils import main as ofac_tool
+from utils.fatf_search_utils import main as tax_haven_tool
 import json
 
 class RiskAssessmentTool:
@@ -44,7 +45,8 @@ class RiskAssessmentTool:
                 lei_result = json.loads(LegalEntityIdentifierTool().forward(entity, jurisdiction, industry))
                 ofac_result = ofac_api(entity)
                 pep_result = pep_api(entity)
-                tax_havens_result = tax_havens_api(jurisdiction)
+                # tax_havens_result = tax_havens_api(jurisdiction)
+                tax_havens_result = tax_haven_tool(jurisdiction)
                 geo_risk_result = geo_risk_tool(jurisdiction)
                 fatf_result = fatf_tool(jurisdiction)
                 if ofac_result.get("risk_score", 0) >= 0.9:
@@ -59,7 +61,7 @@ class RiskAssessmentTool:
                 reasons.append(ml_news_result.get("supporting_evidence", []))
                 reasons.append(ofac_result.get("supporting_evidence", []))
                 reasons.append(pep_result.get("supporting_evidence", []))
-                reasons.append(tax_havens_result.get("supporting_evidence", []))
+                reasons.append(tax_havens_result.get("evidence", []))
                 reasons.append(fatf_result.get("evidence", []))
                 reasons.append(geo_risk_result.get("evidence", []))
 
