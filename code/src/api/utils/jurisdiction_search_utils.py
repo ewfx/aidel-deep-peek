@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 import re
+from rapidfuzz import process, fuzz
 
 # Path to AML.csv
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -27,32 +28,39 @@ def normalize_text(text):
     # Remove extra spaces
     return re.sub(r'\s+', ' ', text).strip()
 
-def search_country(input_address, df):
-    if df.empty:
-        return {"country": "", "aml_score": "", "evidence": ""}
+def search_country(df, search_term, column_name, threshold=60):
+    search_term = normalize_text(search_term)
     
-    # Normalize input address and countries
-    input_words = set(normalize_text(input_address).split())
-    df['Normalized_Country'] = df['Countries'].apply(normalize_text)
-
-    # Check for any word match
-    for _, row in df.iterrows():
-        country_words = set(row['Normalized_Country'].split())
-        if input_words.intersection(country_words):
-            aml_score = float(row['AML_Score']) if pd.notna(row['AML_Score']) else ""
-            return {
-                "country": row['Countries'],
-                "aml_score": aml_score,
-                "evidence": "https://www.knowyourcountry.com/ratings-table/"
-            }
+    # Get matches with scores
+    matches = process.extract(search_term, df[column_name].dropna().apply(normalize_text), limit=1, scorer=fuzz.token_set_ratio)
     
-    # No match found
-    return {"country": "", "aml_score": "", "evidence": ""}
+    # Filter matches above threshold
+    best_matches = [(df.iloc[match[2]], match[1]) for match in matches if match[1] >= threshold]
+    
+    # Prepare JSON output
+    result = []
+    if best_matches:
+        for match, score in best_matches:
+            if column_name == "Countries":
+                result.append({
+                    "country": match['Countries'],
+                    "aml_score": float(match['AML_Score']) if pd.notna(match['AML_Score']) else None,
+                    "evidence": "https://www.knowyourcountry.com/ratings-table/",
+                    "score": score
+                })
+            else:
+                result.append({
+                    "entity": '',
+                    "aml_score": '',
+                    "evidence": "",
+                    "score": score
+                })
+    return result
 
 # Main function
 def main(input_address):
     df = load_csv(file_path)
-    result = search_country(input_address, df)
+    result = search_country(df, input_address,"Countries")
     print("Search Result:", result)
     return result
 

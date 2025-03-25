@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 import re
+from rapidfuzz import process, fuzz
 
 # Path to FATF.csv
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -27,35 +28,43 @@ def normalize_text(text):
     # Remove extra spaces
     return re.sub(r'\s+', ' ', text).strip()
 
-def search_country(input_address, df):
-    if df.empty:
-        return {"country": "", "category": "", "evidence": ""}
+def search_country(df, search_term, column_name, threshold=40):
+    search_term = normalize_text(search_term)
     
-    # Normalize input address and countries
-    input_words = set(normalize_text(input_address).split())
-    df['Normalized_Country'] = df['Countries'].apply(normalize_text)
-
-    # Check for any word match
-    for _, row in df.iterrows():
-        country_words = set(row['Normalized_Country'].split())
-        if input_words.intersection(country_words):
-            return {
-                "country": row['Countries'],
-                "category": row['Category'],
-                "evidence": "https://www.fatf-gafi.org/en/countries/black-and-grey-lists.html"
-            }
+    # Get matches with scores
+    matches = process.extract(search_term, df[column_name].dropna().apply(normalize_text), limit=1, scorer=fuzz.token_set_ratio)
     
-    # No match found
-    return {"country": "", "category": "", "evidence": ""}
+    # Filter matches above threshold
+    best_matches = [(df.iloc[match[2]], match[1]) for match in matches if match[1] >= threshold]
+    
+    # Prepare JSON output
+    result = []
+    if best_matches:
+        for match, score in best_matches:
+            if column_name == "Countries":
+                result.append({
+                    "country": match['Countries'],
+                    "category": match['Category'],
+                    "evidence": "https://www.fatf-gafi.org/en/countries/black-and-grey-lists.html",
+                    "score": score
+                })
+            else:
+                result.append({
+                    "entity": "",
+                    "category": "",
+                    "evidence": "",
+                    "score": score
+                })
+    return result
 
 # Main function
 def main(input_address):
     df = load_csv(file_path)
-    result = search_country(input_address, df)
+    result = search_country(df,input_address,"Countries")
     print("Search Result:", result)
     return result
 
 # Example Usage
 if __name__ == "__main__":
-    country_address = "Democratic Republic of the Congo"
+    country_address = "12 Main Street, Pretoria, 0001, South Africa"
     main(country_address)

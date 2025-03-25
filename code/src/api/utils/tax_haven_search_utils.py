@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 import re
+from rapidfuzz import process, fuzz
 
 # Path to TAX_HAVEN.csv
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -20,41 +21,45 @@ def normalize_text(text):
     if pd.isna(text):
         return ""
     text = str(text).lower().strip()
-    # Remove non-alphanumeric characters except spaces
     text = ''.join(e for e in text if e.isalnum() or e.isspace())
-    # Remove "of" and "the" as whole words using regex
     text = re.sub(r'\b(of|the)\b', '', text)
-    # Remove extra spaces
     return re.sub(r'\s+', ' ', text).strip()
 
-def search_country(input_address, df):
-    if df.empty:
-        return {"country": "", "evidence": ""}
+def search_country(df, search_term, column_name, threshold=60):
+    search_term = normalize_text(search_term)
     
-    # Normalize input address and countries
-    input_words = set(normalize_text(input_address).split())
-    df['Normalized_Country'] = df['Countries'].apply(normalize_text)
-
-    # Check for any word match
-    for _, row in df.iterrows():
-        country_words = set(row['Normalized_Country'].split())
-        if input_words.intersection(country_words):
-            return {
-                "country": row['Countries'],
-                "evidence": "https://cthi.taxjustice.net/full-list"
-            }
+    # Get matches with scores
+    matches = process.extract(search_term, df[column_name].dropna().apply(normalize_text), limit=1, scorer=fuzz.token_set_ratio)
     
-    # No match found
-    return {"country": "", "evidence": ""}
+    # Filter matches above threshold
+    best_matches = [(df.iloc[match[2]], match[1]) for match in matches if match[1] >= threshold]
+    
+    # Prepare JSON output
+    result = []
+    if best_matches:
+        for match, score in best_matches:
+            result.append({
+                "country": match['Countries'],
+                "evidence": "https://cthi.taxjustice.net/full-list",
+                "score": score
+            })
+    else:
+        result.append({
+            "country": "",
+            "evidence": "",
+            "score": 0
+        })
+    
+    return result
 
 # Main function
 def main(input_address):
     df = load_csv(file_path)
-    result = search_country(input_address, df)
+    result = search_country(df, input_address, "Countries")
     print("Search Result:", result)
     return result
 
 # Example Usage
 if __name__ == "__main__":
-    country_address = "Bahamas"
+    country_address = "Cayman Islands national bank"
     main(country_address)
