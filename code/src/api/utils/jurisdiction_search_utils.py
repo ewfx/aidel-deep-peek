@@ -46,14 +46,14 @@ def search_country(df, search_term, column_name, threshold=60):
                     "country": match['Countries'],
                     "aml_score": float(match['AML_Score']) if pd.notna(match['AML_Score']) else None,
                     "evidence": "https://www.knowyourcountry.com/ratings-table/",
-                    "score": score
+                    "risk_score": score * 0.01
                 })
             else:
                 result.append({
                     "entity": '',
                     "aml_score": '',
                     "evidence": "",
-                    "score": score
+                    "risk_score": 0
                 })
     return result
 

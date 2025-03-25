@@ -46,14 +46,14 @@ def search_country(df, search_term, column_name, threshold=40):
                     "country": match['Countries'],
                     "category": match['Category'],
                     "evidence": "https://www.fatf-gafi.org/en/countries/black-and-grey-lists.html",
-                    "score": score
+                    "risk_score": score * 0.01
                 })
             else:
                 result.append({
                     "entity": "",
                     "category": "",
                     "evidence": "",
-                    "score": score
+                    "risk_score": 0
                 })
     return result
 
