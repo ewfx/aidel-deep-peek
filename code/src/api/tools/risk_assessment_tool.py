@@ -61,7 +61,7 @@ class RiskAssessmentTool:
                 reasons.append(ml_news_result.get("supporting_evidence", []))
                 reasons.append(ofac_result.get("supporting_evidence", []))
                 reasons.append(pep_result.get("supporting_evidence", []))
-                reasons.append(tax_havens_result.get("supporting_evidence", []))
+                reasons.append(tax_havens_result.get("evidence", []))
                 reasons.append(fatf_result.get("evidence", []))
                 reasons.append(geo_risk_result.get("evidence", []))
 
