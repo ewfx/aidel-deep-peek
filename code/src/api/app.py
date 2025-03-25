@@ -14,6 +14,9 @@ app = FastAPI(
 class RiskResponse(BaseModel):
     results: List[Dict]
 
+class ReportResponse(BaseModel):
+    results: str
+
 
 @app.post("/process-text", response_model=RiskResponse)
 async def process_text_file(file: UploadFile = File(Ellipsis)):
@@ -32,6 +35,22 @@ async def process_text_file(file: UploadFile = File(Ellipsis)):
         risk_generator = RiskJSONGenerator(query=text_content)
         results = risk_generator.process()
         return RiskResponse(results=results)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
+
+@app.post("/generate-report")
+async def generate_report(file: UploadFile = File(Ellipsis)):
+    """
+    Generate risk assessment results report.
+    """
+    try:
+        content = await file.read()
+        text_content = content.decode('utf-8')
+        risk_generator = RiskJSONGenerator(query=text_content)
+        results = risk_generator.process()
+        results = risk_generator.generate_process(results)
+        return ReportResponse(results=results)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
 
