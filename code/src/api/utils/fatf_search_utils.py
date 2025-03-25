@@ -33,7 +33,7 @@ def search_country(df, search_term, column_name, threshold=40):
     
     # Get matches with scores
     matches = process.extract(search_term, df[column_name].dropna().apply(normalize_text), limit=1, scorer=fuzz.token_set_ratio)
-    
+
     # Filter matches above threshold
     best_matches = [(df.iloc[match[2]], match[1]) for match in matches if match[1] >= threshold]
     

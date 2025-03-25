@@ -95,7 +95,7 @@ if __name__ == "__main__":
     print("Fetched News Articles:")
     for article in news_articles:
         print(f"Title: {article['title']}")
-    top_negative_news = NewsUtils.filter_top_negative_news(news_articles, top_n=5)
+    top_negative_news = NewsUtils.filter_top_negative_news(news_articles, top_n=3)
     print("\nTop Negative News Articles:")
     for article in top_negative_news:
         risk, conf = NewsUtils.compute_risk_and_confidence(article)
