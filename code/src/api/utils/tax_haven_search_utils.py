@@ -41,13 +41,13 @@ def search_country(df, search_term, column_name, threshold=60):
             result.append({
                 "country": match['Countries'],
                 "evidence": "https://cthi.taxjustice.net/full-list",
-                "score": score
+                "risk_score": score * 0.01
             })
     else:
         result.append({
             "country": "",
             "evidence": "",
-            "score": 0
+            "risk_score": 0
         })
     
     return result
