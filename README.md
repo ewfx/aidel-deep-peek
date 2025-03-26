@@ -21,7 +21,10 @@ DeepPeek is an AI-powered system designed to automate research and evidence-gath
 ![Architecture Diagram](artifacts/arch/architecture.png)
 
 ## 🎥 Demo
-📹 [Video Demo](artifacts/demo/DeepPeek demo vid.mp4)
+
+https://github.com/user-attachments/assets/5d72d463-a72d-4abf-99ed-580093ac31bc
+
+
 
 🖼️ Screenshots:
 
