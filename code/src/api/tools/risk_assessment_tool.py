@@ -49,6 +49,27 @@ class RiskAssessmentTool:
                 tax_havens_result = tax_haven_tool(jurisdiction)
                 geo_risk_result = geo_risk_tool(jurisdiction)
                 fatf_result = fatf_tool(jurisdiction)
+
+                # # High-risk trigger: Check if any critical source > 0.9
+                # high_risk_trigger = max(ofac_score, fatf_score, pep_score) > 0.9
+
+                # # Base high-risk score if any critical risk > 0.9
+                # if high_risk_trigger:
+                #     base_risk = 0.9
+                # else:
+                #     base_risk = 0
+
+                # # Weighted sum for less critical sources
+                # additional_risk = (
+                #     ml_news_score + lei_score + tax_havens_score * 0.2 + geo_risk_score * 0.2
+                # )
+
+                # # Combine base risk with additional contributions
+                # total_risk = base_risk + (1 - base_risk) * additional_risk
+
+                # # Ensure final risk score is between 0 and 1
+                # final_risk_score = min(1, max(0, total_risk))
+
                 if ofac_result.get("risk_score", 0) >= 0.9:
                     entity_risk_score = 1
                     flag = 1
@@ -69,7 +90,7 @@ class RiskAssessmentTool:
                     reasons.append(lei_result.get("reason", ""))
 
             avg_risk_score = total_risk_score / (len(entity_list) * n_tools) if entity_list else 0.0
-            final_risk_score = min(10.0, max(0.0, avg_risk_score)) if flag == 0 else 1.0
+            final_risk_score = min(1.0, max(0.0, avg_risk_score)) if flag == 0 else 1.0
             final_confidence = min(1.0, max(0.0, total_confidence / (len(entity_list) * n_tools) if entity_list else 1.0))
 
             txn_result = {

@@ -5,6 +5,7 @@ import uvicorn
 import pandas as pd
 import io
 from main import RiskJSONGenerator
+import json
 
 app = FastAPI(
     title="DeepPeek API",
@@ -93,8 +94,10 @@ async def generate_report(file: UploadFile = File(Ellipsis)):
             
         risk_generator = RiskJSONGenerator(query=text_content)
         results = risk_generator.process()
-        results = risk_generator.generate_process(results)
-        return ReportResponse(results=results)
+        pdf = risk_generator.generate_process(results)
+        
+        return ReportResponse(results=json.dumps({"results":results,"pdf":pdf}))
+        
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
 
