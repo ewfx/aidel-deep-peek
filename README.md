@@ -1,4 +1,4 @@
-# 🚀 Project Name
+# 🚀 DeepPeek
 
 ## 📌 Table of Contents
 - [Introduction](#introduction)
@@ -14,47 +14,89 @@
 ---
 
 ## 🎯 Introduction
-A brief overview of your project and its purpose. Mention which problem statement are your attempting to solve. Keep it concise and engaging.
+DeepPeek is an AI-powered system designed to automate research and evidence-gathering for identifying, verifying, and risk-scoring entities involved in complex financial transactions. It helps reduce manual effort, improve accuracy, and integrate real-time updates for a robust risk evaluation mechanism.
+
+## Architecture Diagram
+
+![Architecture Diagram](artifacts/arch/architecture.png)
 
 ## 🎥 Demo
-🔗 [Live Demo](#) (if applicable)  
-📹 [Video Demo](#) (if applicable)  
+📹 [Video Demo](artifacts/demo/DeepPeek demo vid.mp4)
+
 🖼️ Screenshots:
 
-![Screenshot 1](link-to-image)
+### Descriptive Report UI
+
+![Descriptive Report UI](artifacts/demo/screenshots/chatbot ui.png)
+
+### Response from FastAPI
+
+![Response from FastAPI](artifacts/demo/screenshots/fastapi_response.png)
+
+## Sample generated Report
+[Generated Report](artifacts/demo/sample generated pdf/Risk Report.pdf)
 
 ## 💡 Inspiration
-What inspired you to create this project? Describe the problem you're solving.
+Financial fraud, money laundering, and illicit transactions remain major challenges in the banking and financial sectors. Manually analyzing transaction data is time-consuming and prone to errors. DeepPeek automates this process, providing real-time risk analysis with supporting evidence.
 
 ## ⚙️ What It Does
-Explain the key features and functionalities of your project.
+- Extracts entities from structured and unstructured transaction data.
+- Enriches extracted data with external sources such as financial APIs, regulatory databases, and news sources.
+- Assesses transaction risk using multiple risk evaluation tools.
+- Computes a final risk score, confidence level, and reasoning for each transaction.
+- Generates detailed PDF reports for transaction risk assessments.
 
 ## 🛠️ How We Built It
-Briefly outline the technologies, frameworks, and tools used in development.
+DeepPeek is built using a multi-agent framework where a **Manager Agent** delegates tasks to specialized tools:
+- **Web Search Agent**: Fetches relevant entity information via web search.
+- **Risk Assessment Agent**: Calculates risk scores using various compliance and financial risk tools.
+- **Risk Assessment Tools**:
+   - **Legal Entity Identifier (LEI) Tool**
+   - **OFAC Sanctions List Tool**
+   - **Money Laundering, Fraud & Scandal News Retrieval Tool**
+   - **Tax Haven Country Tool**
+   - **PEP (Politically Exposed Persons) Tool**
+   - **FATF (Financial Action Task Force) Tool**
+   - **Geographical Risk Tool**
 
 ## 🚧 Challenges We Faced
-Describe the major technical or non-technical challenges your team encountered.
+- Integrating multiple external data sources.
+- Developing an accurate and explainable risk-scoring mechanism.
 
+## API Endpoints
+- `/process-text` : generates raw findings in json format 
+- `/generate-report` : generates a detailed descriptive final report with option to download as PDF
+![API Endpoints](artifacts/demo/screenshots/fastapi_endpoints.jpg)
+ 
 ## 🏃 How to Run
-1. Clone the repository  
+1. Clone the repository
    ```sh
    git clone https://github.com/your-repo.git
    ```
-2. Install dependencies  
+2. Install dependencies
    ```sh
-   npm install  # or pip install -r requirements.txt (for Python)
+   pip install -r requirements.txt
    ```
-3. Run the project  
+3. Run the application
+   ```sh ./code
+   streamlit run chatbot.py
+   ```
+4. Run FastAPI endpoint
    ```sh
-   npm start  # or python app.py
+   cd ./code/src/api
+   uvicorn app:app --reload
    ```
+
 
 ## 🏗️ Tech Stack
-- 🔹 Frontend: React / Vue / Angular
-- 🔹 Backend: Node.js / FastAPI / Django
-- 🔹 Database: PostgreSQL / Firebase
-- 🔹 Other: OpenAI API / Twilio / Stripe
+- **Backend**: Python, FastAPI
+- **AI Models**: Hugging Face Transformers
+- **UI Framework**: Streamlit
+- **Tools & Frameworks**: SmolAgents, Pandas, NumPy, ReportLab (for PDF generation)
 
 ## 👥 Team
-- **Your Name** - [GitHub](#) | [LinkedIn](#)
-- **Teammate 2** - [GitHub](#) | [LinkedIn](#)
+- **Samarth Mishra** - [GitHub](https://github.com/samarth1029) 
+- **Govinda Rajulu Nelluri** - [GitHub](https://github.com/rajunelluri)
+- **Ayush Bhatt** - [GitHub](https://github.com/Ayushbrainer)
+- **Akshat Tripathi** - [GitHub](https://github.com/a19tripathi)
+- **Akash Kumar** - [GitHub](https://github.com/akakash55)
