@@ -85,7 +85,7 @@ DeepPeek is built using a multi-agent framework where a **Manager Agent** delega
 
 1. Clone the repository
    ```sh
-   git clone https://github.com/your-repo.git
+   git clone https://github.com/ewfx/aidel-deep-peek.git
    ```
 2. Install dependencies
    ```sh
