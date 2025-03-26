@@ -21,6 +21,8 @@ def normalize_text(text):
     if pd.isna(text):
         return ""
     text = str(text).lower().strip()
+    # Remove numbers and common address words like PO, street, town
+    text = re.sub(r'\b(po|box|street|road|town)\b', '', text)
     text = ''.join(e for e in text if e.isalnum() or e.isspace())
     text = re.sub(r'\b(of|the)\b', '', text)
     return re.sub(r'\s+', ' ', text).strip()
@@ -28,43 +30,42 @@ def normalize_text(text):
 def search_country(df, search_term, column_name, threshold=80):
     search_term = normalize_text(search_term)
     
-    # Get matches with scores
-    matches = process.extract(search_term, df[column_name].dropna().apply(normalize_text), limit=1, scorer=fuzz.token_set_ratio)
+    # Apply both token_set_ratio and token_sort_ratio
+    matches_set = process.extract(search_term, df[column_name].dropna().apply(normalize_text), limit=5, scorer=fuzz.token_set_ratio)
+    matches_sort = process.extract(search_term, df[column_name].dropna().apply(normalize_text), limit=5, scorer=fuzz.token_sort_ratio)
     
-    # Filter matches above threshold
-    best_matches = [(df.iloc[match[2]], match[1]) for match in matches if match[1] >= threshold]
+    # Convert matches_sort to a dictionary with string and score
+    sort_dict = {match[0]: match[1] for match in matches_sort}
     
-    # Prepare JSON output
-    result = []
-    if best_matches:
-        for match, score in best_matches:
-            country_name = match['Countries']
-            evidence = f"{country_name} is identified as a tax haven country. Source: https://cthi.taxjustice.net/full-list"
-            result.append({
-                "country": country_name,
-                "evidence": evidence,
-                "risk_score": score * 0.01
-            })
-    else:
-        result.append({
-            "country": "",
-            "evidence": "",
-            "risk_score": 0
-        })
+    # Combine and deduplicate results
+    combined_matches = {match[0]: max(match[1], sort_dict.get(match[0], 0)) for match in matches_set}
     
-    return result[0] if result else {"country": "","evidence": "","risk_score": 0}
+    # Find the best match above the threshold
+    best_match = max(combined_matches.items(), key=lambda x: x[1], default=None)
+    
+    if best_match and best_match[1] >= threshold:
+        matched_index = df[df[column_name].apply(normalize_text) == best_match[0]].index[0]
+        country_name = df.at[matched_index, 'Countries']
+        evidence = f"{country_name} is identified as a tax haven country. Source: https://cthi.taxjustice.net/full-list"
+        return {
+            "country": country_name,
+            "evidence": evidence,
+            "risk_score": best_match[1] * 0.01
+        }
+
+    return {"country": "", "evidence": "", "risk_score": 0}
 
 # Main function
 def main(input_address):
     df = load_csv(file_path)
-    result = search_country(df, input_address, "Countries", threshold=60)
+    result = search_country(df, input_address, "Countries", threshold=65)
     print(input_address)
     print("Search Result:", result)
     return result
 
 # Example Usage
 if __name__ == "__main__":
-    country_address = "Cayman Island national bank"
+    country_address = "PO 1234, George Town,Cayman Island"
     main(country_address)
 
 # def main(input_address):

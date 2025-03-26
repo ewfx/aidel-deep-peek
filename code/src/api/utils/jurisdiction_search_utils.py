@@ -21,11 +21,10 @@ def normalize_text(text):
     if pd.isna(text):
         return ""
     text = str(text).lower().strip()
-    # Remove non-alphanumeric characters except spaces
+    # Remove numbers and common address words like PO, street, town
+    text = re.sub(r'\b(po|box|street|road|town)\b', '', text)
     text = ''.join(e for e in text if e.isalnum() or e.isspace())
-    # Remove "of" and "the" as whole words using regex
     text = re.sub(r'\b(of|the)\b', '', text)
-    # Remove extra spaces
     return re.sub(r'\s+', ' ', text).strip()
 
 def search_country(df, search_term, column_name, threshold=80):
@@ -35,33 +34,39 @@ def search_country(df, search_term, column_name, threshold=80):
     # Normalize all values in the specified column
     normalized_values = df[column_name].dropna().apply(normalize_text)
     
-    # Get matches with scores using normalized values
-    matches = process.extract(search_term, normalized_values, limit=1, scorer=fuzz.token_set_ratio)
-
-    # Filter matches above threshold
-    best_matches = [(df.iloc[match[2]], match[1]) for match in matches if match[1] >= threshold]
+    # Get matches with scores using both token_set_ratio and token_sort_ratio
+    matches_set = process.extract(search_term, normalized_values, limit=5, scorer=fuzz.token_set_ratio)
+    matches_sort = process.extract(search_term, normalized_values, limit=5, scorer=fuzz.token_sort_ratio)
     
-    # Prepare JSON output
-    result = []
-    if best_matches:
-        for match, score in best_matches:
-            if column_name == "Countries":
-                country_name = match['Countries']
-                evidence = f"{country_name} is present in the list of top anti-money laundering countries. Source: https://www.knowyourcountry.com/ratings-table/"
-                result.append({
-                    "country": country_name,
-                    "aml_score": float(match['AML_Score']) if pd.notna(match['AML_Score']) else None,
-                    "evidence": evidence,
-                    "risk_score": score * 0.01
-                })
-            else:
-                result.append({
-                    "entity": '',
-                    "aml_score": '',
-                    "evidence": "",
-                    "risk_score": 0
-                })
-    return result[0] if result else {"entity": '',"aml_score": '',"evidence": "","risk_score": 0}
+    # Combine and deduplicate results using the highest score
+    sort_dict = {match[0]: match[1] for match in matches_sort}
+    combined_matches = {match[0]: max(match[1], sort_dict.get(match[0], 0)) for match in matches_set}
+    
+    # Find the best match above the threshold
+    best_match = max(combined_matches.items(), key=lambda x: x[1], default=None)
+    
+    if best_match and best_match[1] >= threshold:
+        matched_index = df[df[column_name].apply(normalize_text) == best_match[0]].index[0]
+        match = df.iloc[matched_index]
+        
+        if column_name == "Countries":
+            country_name = match['Countries']
+            evidence = f"{country_name} is present in the list of top anti-money laundering countries. Source: https://www.knowyourcountry.com/ratings-table/"
+            return {
+                "country": country_name,
+                "aml_score": float(match['AML_Score']) if pd.notna(match['AML_Score']) else None,
+                "evidence": evidence,
+                "risk_score": best_match[1] * 0.01
+            }
+        else:
+            return {
+                "entity": '',
+                "aml_score": '',
+                "evidence": "",
+                "risk_score": 0
+            }
+    
+    return {"entity": '', "aml_score": '', "evidence": "", "risk_score": 0}
 
 # Main function
 def main(input_address):
@@ -73,7 +78,7 @@ def main(input_address):
 
 # Example Usage
 if __name__ == "__main__":
-    country_address = "Uzbekistan"
+    country_address = "50 Lê Lợi, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh, Vietnam"
     main(country_address)
 
 # def main(input_address):
