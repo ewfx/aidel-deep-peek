@@ -38,7 +38,8 @@ https://github.com/user-attachments/assets/5d72d463-a72d-4abf-99ed-580093ac31bc
 
 ## Sample generated Report
 
-[Generated Report](artifacts/demo/sample generated pdf/Risk_Report.pdf)
+[Generated Report
+](artifacts/demo/sample_generated_pdf/Risk_Report.pdf)
 
 ## 💡 Inspiration
 
@@ -76,6 +77,8 @@ DeepPeek is built using a multi-agent framework where a **Manager Agent** delega
 
 - `/process-text` : generates raw findings in json format
 - `/generate-report` : generates a detailed descriptive final report with option to download as PDF
+
+
   ![API Endpoints](artifacts/demo/screenshots/fastapi_endpoints.jpg)
 
 ## 🏃 How to Run
