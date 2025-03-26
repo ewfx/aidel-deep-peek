@@ -50,31 +50,31 @@ class RiskAssessmentTool:
                 geo_risk_result = geo_risk_tool(jurisdiction)
                 fatf_result = fatf_tool(jurisdiction)
 
-                # High-risk trigger: Check if any critical source > 0.9
-                high_risk_trigger = max(ofac_result, fatf_result, pep_result) > 0.9
+                # # High-risk trigger: Check if any critical source > 0.9
+                # high_risk_trigger = max(ofac_result, fatf_result, pep_result) > 0.9
 
-                # Base high-risk score if any critical risk > 0.9
-                if high_risk_trigger:
-                    base_risk = 0.9
-                else:
-                    base_risk = 0
-
-                # Weighted sum for less critical sources
-                additional_risk = (
-                    ml_news_result + lei_result + tax_havens_result * 0.2 + geo_risk_result * 0.2
-                )
-
-                # Combine base risk with additional contributions
-                total_risk = base_risk + (1 - base_risk) * additional_risk
-
-                # Ensure final risk score is between 0 and 1
-                entity_risk_score = min(1, max(0, total_risk))
-
-                # if ofac_result.get("risk_score", 0) >= 0.9:
-                #     entity_risk_score = 1
-                #     flag = 1
+                # # Base high-risk score if any critical risk > 0.9
+                # if high_risk_trigger:
+                #     base_risk = 0.9
                 # else:
-                #     entity_risk_score = ml_news_result.get("risk_score", 0) * 0.1 + lei_result.get("risk_score", 0) * 0.1 + ofac_result.get("risk_score", 0) + pep_result.get("risk_score", 0) + tax_havens_result.get("risk_score", 0)  + fatf_result.get("risk_score",0) + geo_risk_result.get("risk_score",0) 
+                #     base_risk = 0
+
+                # # Weighted sum for less critical sources
+                # additional_risk = (
+                #     ml_news_result + lei_result + tax_havens_result * 0.2 + geo_risk_result * 0.2
+                # )
+
+                # # Combine base risk with additional contributions
+                # total_risk = base_risk + (1 - base_risk) * additional_risk
+
+                # # Ensure final risk score is between 0 and 1
+                # entity_risk_score = min(1, max(0, total_risk))
+
+                if ofac_result.get("risk_score", 0) >= 0.9:
+                    entity_risk_score = 1
+                    flag = 1
+                else:
+                    entity_risk_score = ml_news_result.get("risk_score", 0) * 0.1 + lei_result.get("risk_score", 0) * 0.1 + ofac_result.get("risk_score", 0) + pep_result.get("risk_score", 0) + tax_havens_result.get("risk_score", 0)  + fatf_result.get("risk_score",0) + geo_risk_result.get("risk_score",0) 
                 entity_confidence = ml_news_result.get("confidence", 0) + lei_result.get("confidence", 0) + ofac_result.get("risk_score", 0) + pep_result.get("risk_score", 0) + tax_havens_result.get("risk_score", 0) + fatf_result.get("risk_score",0) + geo_risk_result.get("risk_score",0)
 
                 total_risk_score += entity_risk_score
