@@ -5,6 +5,7 @@ import requests
 from io import BytesIO
 import json
 
+
 def chat_stream(prompt):
     print(type(prompt['files'][0]))
     transactions = BytesIO(prompt['files'][0].read())
@@ -83,14 +84,16 @@ if uploaded_file and st.sidebar.button("Upload"):
             upload_response = json.loads(upload_response['results'])
             print("RESULTSSSSS"+str(upload_response.keys()))
             with st.chat_message("assistant"):
+                # print(open('code/src/api/output.pdf',"wb+").read())
                 if(upload_response['pdf']!= None):
-                    downloadable_file = upload_response['pdf']
+                    downloadable_file = open("code/src/api/output.pdf","r")
+                    print(downloadable_file)
                 st.sidebar.success(f"File uploaded successfully .")
-                st.write((upload_response['results']))
-            st.session_state.history.append({"role": "assistant", "content": upload_response['results']})
+                st.write((upload_response['pdf']))
+            st.session_state.history.append({"role": "assistant", "content": upload_response['pdf']})
 
 if(downloadable_file!=None):
-    st.sidebar.download_button('Download Report',downloadable_file,file_name='Risk Report.txt')
+    st.sidebar.download_button('Download Report',data=downloadable_file.read(),file_name='Risk Report.pdf',mime='application/octet-stream')
 
 if prompt := st.chat_input("Say something"):
     with st.chat_message("user"):
