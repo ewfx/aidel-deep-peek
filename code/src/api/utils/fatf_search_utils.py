@@ -35,41 +35,50 @@ def search_country(df, search_term, column_name, threshold=80):
     # Normalize all values in the specified column
     normalized_values = df[column_name].dropna().apply(normalize_text)
     
-    # Get matches with scores using normalized values
-    matches = process.extract(search_term, normalized_values, limit=1, scorer=fuzz.token_set_ratio)
+    # Get matches using both token_set_ratio and token_sort_ratio
+    matches_set = process.extract(search_term, normalized_values, limit=5, scorer=fuzz.token_set_ratio)
+    matches_sort = process.extract(search_term, normalized_values, limit=5, scorer=fuzz.token_sort_ratio)
 
-    # Filter matches above threshold
-    best_matches = [(df.iloc[match[2]], match[1]) for match in matches if match[1] >= threshold]
+    # Combine and deduplicate results by taking the best score for each match
+    combined_matches = {}
+    for match in matches_set + matches_sort:
+        if match[0] not in combined_matches:
+            combined_matches[match[0]] = match[1]
+        else:
+            combined_matches[match[0]] = max(combined_matches[match[0]], match[1])
+
+    # Find the best match above the threshold
+    best_match = max(combined_matches.items(), key=lambda x: x[1], default=(None, 0))
     
-    # Prepare JSON output
-    result = []
-    if best_matches:
-        for match, score in best_matches:
-            if column_name == "Countries":
-                result.append({
-                    "country": match['Countries'],
-                    "evidence": f"This country is present in FATF {match['Category']} List. Source: https://www.fatf-gafi.org/en/countries/black-and-grey-lists.html",
-                    "risk_score": score * 0.01
-                })
-            else:
-                result.append({
-                    "entity": "",
-                    "evidence": "",
-                    "risk_score": 0
-                })
-    return result[0] if result else {"entity": "", "evidence": "","risk_score": 0}
+    if best_match[1] >= threshold:
+        matched_index = normalized_values[normalized_values == best_match[0]].index[0]
+        match = df.loc[matched_index]
+        if column_name == "Countries":
+            return {
+                "country": match['Countries'],
+                "evidence": f"This country is present in FATF {match['Category']} List. Source: https://www.fatf-gafi.org/en/countries/black-and-grey-lists.html",
+                "risk_score": best_match[1] * 0.01
+            }
+        else:
+            return {
+                "entity": "",
+                "evidence": "",
+                "risk_score": 0
+            }
+    
+    return {"entity": "", "evidence": "", "risk_score": 0}
 
 # Main function
 def main(input_address):
     df = load_csv(file_path)
-    result = search_country(df,input_address,"Countries",threshold=60)
+    result = search_country(df,input_address,"Countries",threshold=65)
     print(input_address)
     print("Search Result:", result)
     return result
 
 # Example Usage
 if __name__ == "__main__":
-    country_address = "Pakistan"
+    country_address = "Jean-Pierre, Rue 15, 23, Port-au-Prince, Ouest, HAITI"
     main(country_address)
 
 # def main(input_address):
